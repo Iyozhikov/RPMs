@@ -1,20 +1,18 @@
-%{!?upstream_version: %global upstream_version %{version}%{?milestone}}
+%global milestone 0b2
+%{!?upstream_version: %global upstream_version %{version}.%{?milestone}}
 %global pypi_name murano-dashboard
 %global mod_name muranodashboard
 
-%global major_ver 3.0.0
-%global milestone b2
-%global pyversion %{major_ver}.0%{milestone}
-
 Name:           openstack-murano-ui
-Version:        %{major_ver}~%{milestone}
-Release:        1%{?dist}
+Version:        3.0.0
+Release:        0.1.b2%{?dist}
 Summary:        The UI component for the OpenStack murano service
 Group:          Applications/Communications
 License:        ASL 2.0
 URL:            https://github.com/openstack/%{pypi_name}
-Source0:        http://tarballs.openstack.org/%{pypi_name}/%{pypi_name}-%{pyversion}.tar.gz
+Source0:        http://tarballs.openstack.org/%{pypi_name}/%{pypi_name}-%{upstream_version}.tar.gz
 Patch0:         handling-font-awesome.patch
+Patch1:         LICENSE.patch
 BuildRequires:  gettext
 BuildRequires:  openstack-dashboard
 BuildRequires:  python-beautifulsoup4
@@ -57,7 +55,7 @@ an application catalog, running applications and created environments alongside
 with all other OpenStack resources.
 
 %package doc
-Summary:        Documentation for OpenStack os-brick library
+Summary:        Documentation for OpenStack murano dashboard
 BuildRequires:  python-sphinx
 BuildRequires:  python-oslo-sphinx
 BuildRequires:  python-reno
@@ -70,9 +68,10 @@ with all other OpenStack resources.
 This package contains the documentation.
 
 %prep
-%setup -q -n %{pypi_name}-%{pyversion}
+%setup -q -n %{pypi_name}-%{upstream_version}
 # Let RPM handle the dependencies
 %patch0 -p1
+%patch1 -p1
 rm -rf {test-,}requirements.txt tools/{pip,test}-requires
 
 %build
@@ -82,7 +81,7 @@ pushd build/lib/%{mod_name}
 django-admin compilemessages
 popd
 # generate html docs
-export OSLO_PACKAGE_VERSION=%{pyversion}
+export OSLO_PACKAGE_VERSION=%{upstream_version}
 %{__python2} setup.py build_sphinx
 # remove the sphinx-build leftovers
 rm -rf doc/build/html/.{doctrees,buildinfo}
@@ -92,7 +91,7 @@ rm -rf doc/build/html/.{doctrees,buildinfo}
 mkdir -p %{buildroot}%{_datadir}/openstack-dashboard/openstack_dashboard/local/enabled
 mkdir -p %{buildroot}/var/cache/murano-dashboard
 # Enable Horizon plugin for murano-dashboard
-cp %{_builddir}/%{pypi_name}-%{pyversion}/muranodashboard/local/_50_murano.py %{buildroot}%{_datadir}/openstack-dashboard/openstack_dashboard/local/enabled/
+cp %{_builddir}/%{pypi_name}-%{upstream_version}/muranodashboard/local/_50_murano.py %{buildroot}%{_datadir}/openstack-dashboard/openstack_dashboard/local/enabled/
 
 %check
 export PYTHONPATH="%{_datadir}/openstack-dashboard:%{python2_sitearch}:%{python2_sitelib}:%{buildroot}%{python2_sitelib}"
@@ -114,6 +113,7 @@ fi
 %systemd_postun_with_restart httpd.service
 
 %files
+%license LICENSE
 %doc README.rst
 %{python2_sitelib}/muranodashboard
 %{python2_sitelib}/murano_dashboard*.egg-info
@@ -121,6 +121,7 @@ fi
 %dir %attr(755, apache, apache) /var/cache/murano-dashboard
 
 %files doc
+%license LICENSE
 %doc doc/build/html
 
 %changelog
