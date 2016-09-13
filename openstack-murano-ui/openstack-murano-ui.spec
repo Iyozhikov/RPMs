@@ -13,6 +13,7 @@ URL:            https://github.com/openstack/%{pypi_name}
 Source0:        http://tarballs.openstack.org/%{pypi_name}/%{pypi_name}-%{upstream_version}.tar.gz
 Patch0:         handling-font-awesome.patch
 Patch1:         LICENSE.patch
+Patch2:         remove-legacy-tool.patch
 BuildRequires:  gettext
 BuildRequires:  openstack-dashboard
 BuildRequires:  python-beautifulsoup4
@@ -69,9 +70,10 @@ This package contains the documentation.
 
 %prep
 %setup -q -n %{pypi_name}-%{upstream_version}
-# Let RPM handle the dependencies
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
+# Let RPM handle the dependencies
 rm -rf {test-,}requirements.txt tools/{pip,test}-requires
 
 %build
@@ -96,9 +98,6 @@ cp %{_builddir}/%{pypi_name}-%{upstream_version}/muranodashboard/local/_50_muran
 %check
 export PYTHONPATH="%{_datadir}/openstack-dashboard:%{python2_sitearch}:%{python2_sitelib}:%{buildroot}%{python2_sitelib}"
 %{__python2} manage.py test muranodashboard --settings=muranodashboard.tests.settings
-
-%clean
-rm -rf %{buildroot}
 
 %post
 HORIZON_SETTINGS='/etc/openstack-dashboard/local_settings'
